@@ -16,6 +16,18 @@ export const validateProduct = [
     .notEmpty()
     .withMessage("Model is required"),
 
+    body("category")
+    .trim()
+    .isIn([
+      "Gaming",
+      "Business",
+      "Student",
+      "Ultrabook",
+      "Workstation",
+      "2-in-1",
+    ])
+    .withMessage("Invalid category"),
+
   body("price")
   .trim()
   .toFloat()
@@ -44,11 +56,11 @@ body("storage")
     .notEmpty()
     .withMessage("GPU is required"),
 
-  body("display")
+  body("screenSize")
   .trim()
   .toFloat()
   .isFloat({ gt: 0 })
-  .withMessage("Display size must be greater than 0"),
+  .withMessage("Screen size must be greater than 0"),
 
 body("battery")
   .trim()
@@ -95,6 +107,19 @@ export const validateProductUpdate = [
     .notEmpty()
     .withMessage("Model is required"),
 
+    body("category")
+    .optional()
+    .trim()
+    .isIn([
+      "Gaming",
+      "Business",
+      "Student",
+      "Ultrabook",
+      "Workstation",
+      "2-in-1",
+    ])
+    .withMessage("Invalid category"),
+
   body("price")
   .optional()
   .trim()
@@ -128,12 +153,12 @@ body("storage")
     .notEmpty()
     .withMessage("GPU is required"),
 
-  body("display")
+  body("screenSize")
   .optional()
   .trim()
   .toFloat()
   .isFloat({ gt: 0 })
-  .withMessage("Display size must be greater than 0"),
+  .withMessage("Screen size must be greater than 0"),
 
 body("battery")
 .optional()

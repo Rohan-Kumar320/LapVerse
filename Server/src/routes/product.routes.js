@@ -18,13 +18,16 @@ router.post(
 
 router.get("/", getProducts);
 router.get("/:id", getProduct);
+
 router.put(
   "/:id",
   protect,
+  upload.array("images", 5),
   validateProductUpdate,
   validate,
   updateProduct
 );
+
 router.delete("/:id", protect, deleteProduct);
 
 export default router;
