@@ -70,6 +70,62 @@ export const createReview = async (req, res) => {
   }
 };
 
+//Update Reviews
+export const updateReview = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+
+    const review = await Review.findById(req.params.reviewId);
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: "Review not found.",
+      });
+    }
+
+    // Only review owner or admin can update
+    if (
+      review.user.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    review.rating = rating;
+    review.comment = comment;
+
+    await review.save();
+
+    // Recalculate average rating
+    const reviews = await Review.find({
+      product: review.product,
+    });
+
+    const averageRating =
+      reviews.reduce((sum, item) => sum + item.rating, 0) /
+      reviews.length;
+
+    await Product.findByIdAndUpdate(review.product, {
+      averageRating,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Review updated successfully.",
+      review,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 //Read Product Review
 export const getProductReviews = async (req, res) => {
   try {
