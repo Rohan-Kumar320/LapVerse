@@ -5,6 +5,7 @@ import Product from "../models/Product.js";
 export const addToCart = async (req, res) => {
   try {
     const productId = req.params.productId;
+    const { quantity = 1 } = req.body;
 
     const product = await Product.findById(productId);
 
@@ -15,22 +16,42 @@ export const addToCart = async (req, res) => {
       });
     }
 
+    if (product.stock <= 0) {
+  return res.status(400).json({
+    success: false,
+    message: "This product is out of stock.",
+  });
+}
+
     let cartItem = await Cart.findOne({
       user: req.user._id,
       product: productId,
     });
 
-    if (cartItem) {
-      cartItem.quantity += 1;
-      await cartItem.save();
-    } else {
-      cartItem = await Cart.create({
-        user: req.user._id,
-        product: productId,
-        quantity: 1,
-      });
-    }
+if (cartItem) {
+  if (cartItem.quantity >= product.stock) {
+    return res.status(400).json({
+      success: false,
+      message: `Only ${product.stock} item(s) available in stock.`,
+    });
+  }
 
+  cartItem.quantity += quantity;
+  await cartItem.save();
+} else {
+  if (product.stock < 1) {
+    return res.status(400).json({
+      success: false,
+      message: "Product is out of stock.",
+    });
+  }
+
+  cartItem = await Cart.create({
+    user: req.user._id,
+    product: productId,
+    quantity,
+  });
+}
     res.status(200).json({
       success: true,
       message: "Product added to cart.",
@@ -61,20 +82,25 @@ export const getMyCart = async (req, res) => {
     let subtotal = 0;
     let discount = 0;
 
-    cart.forEach((item) => {
-      if (!item.product) return;
+cart.forEach((item) => {
+  if (!item.product) return;
 
-      totalItems += item.quantity;
+  totalItems += item.quantity;
 
-      const price = item.product.price;
-      const itemDiscount = item.product.discount || 0;
+  const price = item.product.price;
+  const itemDiscount = item.product.discount || 0;
 
-      subtotal += price * item.quantity;
+  subtotal += price * item.quantity;
 
-      discount +=
-        (price * itemDiscount * item.quantity) / 100;
-    });
+  discount +=
+    (price * itemDiscount * item.quantity) / 100;
 
+  const discountedPrice =
+    price - (price * itemDiscount) / 100;
+
+  item._doc.itemTotal =
+    discountedPrice * item.quantity;
+});
     const total = subtotal - discount;
 
     res.status(200).json({
@@ -97,6 +123,22 @@ export const getMyCart = async (req, res) => {
 export const updateCartQuantity = async (req, res) => {
   try {
     const { quantity } = req.body;
+
+    const product = await Product.findById(req.params.productId);
+
+if (!product) {
+  return res.status(404).json({
+    success: false,
+    message: "Product not found.",
+  });
+}
+
+if (quantity > product.stock) {
+  return res.status(400).json({
+    success: false,
+    message: `Only ${product.stock} item(s) available in stock.`,
+  });
+}
 
     if (!quantity || quantity < 1) {
       return res.status(400).json({
@@ -154,6 +196,25 @@ export const removeFromCart = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Product removed from cart.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//For Completely Empting the Cart
+export const clearCart = async (req, res) => {
+  try {
+    await Cart.deleteMany({
+      user: req.user._id,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Cart cleared successfully.",
     });
   } catch (error) {
     res.status(500).json({

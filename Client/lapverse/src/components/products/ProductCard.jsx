@@ -1,9 +1,23 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiHeart, FiStar, FiArrowRight } from "react-icons/fi";
-
+import { FaHeart } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { useWishlist } from "../../context/WishlistContext";
+import { useAuth } from "../../context/AuthContext";
 import placeholderImg from "../../assets/images/placeholderimg.png";
 
 const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
+
+const { isAuthenticated } = useAuth();
+
+const {
+  isWishlisted,
+  toggleWishlist,
+} = useWishlist();
+
+const wishlisted = isWishlisted(product._id);
+
   const discountedPrice =
     product.discount > 0
       ? product.price - (product.price * product.discount) / 100
@@ -12,6 +26,30 @@ const ProductCard = ({ product }) => {
   const isNew =
     new Date(product.createdAt) >
     new Date(Date.now() - 1000 * 60 * 60 * 24 * 30);
+
+const handleWishlist = async () => {
+  if (!isAuthenticated) {
+    toast.info("Please login to use wishlist.");
+
+    navigate("/login");
+
+    return;
+  }
+
+  const result = await toggleWishlist(product._id);
+
+  if (!result.success) {
+    toast.error(result.message);
+
+    return;
+  }
+
+  if (result.action === "added") {
+    toast.success("Added to wishlist ❤️");
+  } else {
+    toast.success("Removed from wishlist");
+  }
+};
 
   return (
     <article
@@ -92,26 +130,39 @@ const ProductCard = ({ product }) => {
 
         {/* Wishlist */}
 
-        <button
-          className="
-          z-1
-            absolute
-            right-3
-            top-3
-            flex
-            h-9
-            w-9
-            items-center
-            justify-center
-            rounded-full
-            bg-black/70
-            text-white
-            transition
-            hover:bg-pink-600
-          "
-        >
-          <FiHeart size={16} />
-        </button>
+<button
+  onClick={handleWishlist}
+  className="
+    absolute
+    right-3
+    top-3
+    z-10
+    flex
+    h-10
+    w-10
+    items-center
+    justify-center
+    rounded-full
+    bg-black/70
+    backdrop-blur
+    transition-all
+    duration-300
+    hover:scale-110
+    hover:bg-pink-600
+"
+>
+  {wishlisted ? (
+    <FaHeart
+      size={16}
+      className="text-pink-500"
+    />
+  ) : (
+    <FiHeart
+      size={16}
+      className="text-white"
+    />
+  )}
+</button>
 
         {/* Product Image */}
 

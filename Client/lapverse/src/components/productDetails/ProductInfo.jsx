@@ -1,4 +1,10 @@
+import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { toast } from "react-toastify";
+import { FaHeart } from "react-icons/fa";
+import { useWishlist } from "../../context/WishlistContext";
 import {
   FiCheckCircle,
   FiTruck,
@@ -14,7 +20,21 @@ import {
 import QuantitySelector from "./QuantitySelector";
 
 const ProductInfo = ({ product }) => {
+  const navigate = useNavigate();
+
+const { isAuthenticated } = useAuth();
+
+const {
+  isWishlisted,
+  toggleWishlist,
+} = useWishlist();
+
+const wishlisted = isWishlisted(product._id);
+
   const [expanded, setExpanded] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+const { addProduct } = useCart();
 
   const originalPrice =
     product.discount > 0
@@ -29,6 +49,50 @@ const ProductInfo = ({ product }) => {
   const shortDescription = shouldCollapse
     ? description.substring(0, 180)
     : description;
+
+    const handleWishlist = async () => {
+  if (!isAuthenticated) {
+    toast.info("Please login to use wishlist.");
+
+    navigate("/login");
+
+    return;
+  }
+
+  const result = await toggleWishlist(product._id);
+
+  if (!result.success) {
+    toast.error(result.message);
+
+    return;
+  }
+
+  if (result.action === "added") {
+    toast.success("Added to wishlist ❤️");
+  } else {
+    toast.success("Removed from wishlist");
+  }
+};
+
+const handleAddToCart = async () => {
+  if (!isAuthenticated) {
+    toast.info("Please login first.");
+    navigate("/login");
+    return;
+  }
+
+  const result = await addProduct(
+    product._id,
+    quantity
+  );
+
+  if (!result.success) {
+    toast.error(result.message);
+    return;
+  }
+
+  toast.success(result.message);
+};
 
   return (
     <div className="space-y-8">
@@ -184,7 +248,14 @@ const ProductInfo = ({ product }) => {
 
         <QuantitySelector
           max={product.stock}
+          onChange={setQuantity}
         />
+
+        {quantity === product.stock && product.stock > 0 && (
+  <p className="mt-2 text-sm text-amber-500">
+    Maximum available quantity selected.
+  </p>
+)}
 
       </div>
 
@@ -192,26 +263,25 @@ const ProductInfo = ({ product }) => {
 
       <div className="grid gap-4 sm:grid-cols-2">
 
-        <button
-          disabled={product.stock === 0}
-          className="
-            rounded-2xl
-            bg-primary
-            py-4
-            text-lg
-            font-semibold
-            text-white
-            transition-all
-            duration-300
-            hover:scale-[1.02]
-            hover:shadow-xl
-            disabled:opacity-50
-          "
-        >
-
-          Add To Cart
-
-        </button>
+<button
+  disabled={product.stock === 0}
+  onClick={handleAddToCart}
+  className="
+    rounded-2xl
+    bg-primary
+    py-4
+    text-lg
+    font-semibold
+    text-white
+    transition-all
+    duration-300
+    hover:scale-[1.02]
+    hover:shadow-xl
+    disabled:opacity-50
+  "
+>
+  Add To Cart
+</button>
 
         <button
           disabled={product.stock === 0}
@@ -241,27 +311,34 @@ const ProductInfo = ({ product }) => {
 
       <div className="grid grid-cols-2 gap-4">
 
-        <button
-          className="
-            flex
-            items-center
-            justify-center
-            gap-2
-            rounded-2xl
-            border
-            border-border
-            py-3
-            transition
-            hover:border-primary
-            hover:text-primary
-          "
-        >
+<button
+  onClick={handleWishlist}
+  className={`
+    flex
+    items-center
+    justify-center
+    gap-2
+    rounded-2xl
+    border
+    py-3
+    transition-all
+    duration-300
 
-          <FiHeart />
+    ${
+      wishlisted
+        ? "border-pink-500 bg-pink-500 text-white"
+        : "border-border hover:border-primary hover:text-primary"
+    }
+  `}
+>
+  {wishlisted ? (
+    <FaHeart className="animate-pulse" />
+  ) : (
+    <FiHeart />
+  )}
 
-          Wishlist
-
-        </button>
+  {wishlisted ? "Wishlisted" : "Wishlist"}
+</button>
 
         <button
           className="

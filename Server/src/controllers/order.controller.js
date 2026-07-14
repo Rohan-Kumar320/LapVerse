@@ -22,8 +22,17 @@ export const createOrder = async (req, res) => {
     let subtotal = 0;
     let discount = 0;
 
+    // Validate stock & prepare order items
     for (const item of cart) {
       if (!item.product) continue;
+
+      // Check available stock
+      if (item.product.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `${item.product.title} has only ${item.product.stock} item(s) left in stock.`,
+        });
+      }
 
       items.push({
         product: item.product._id,
@@ -43,6 +52,7 @@ export const createOrder = async (req, res) => {
 
     const total = subtotal - discount;
 
+    // Create Order
     const order = await Order.create({
       user: req.user._id,
       items,
@@ -53,7 +63,16 @@ export const createOrder = async (req, res) => {
       shippingAddress,
     });
 
-    // Clear user's cart
+    // Reduce Product Stock
+    for (const item of cart) {
+      if (!item.product) continue;
+
+      item.product.stock -= item.quantity;
+
+      await item.product.save();
+    }
+
+    // Clear User Cart
     await Cart.deleteMany({
       user: req.user._id,
     });
@@ -70,7 +89,6 @@ export const createOrder = async (req, res) => {
     });
   }
 };
-
 //Retrieving the Orders
 export const getMyOrders = async (req, res) => {
   try {
