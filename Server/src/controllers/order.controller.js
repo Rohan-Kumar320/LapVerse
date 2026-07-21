@@ -171,13 +171,15 @@ export const cancelOrder = async (req, res) => {
       });
     }
 
-    if (order.status !== "Pending") {
-      return res.status(400).json({
-        success: false,
-        message: "Only pending orders can be cancelled.",
-      });
-    }
-
+if (
+  !["Pending", "Confirmed"].includes(order.status)
+) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Only pending or confirmed orders can be cancelled.",
+  });
+}
     order.status = "Cancelled";
 
     await order.save();

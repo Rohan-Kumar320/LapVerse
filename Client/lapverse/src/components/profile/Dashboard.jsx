@@ -1,164 +1,161 @@
 import {
   FiPackage,
   FiHeart,
-  FiShoppingCart,
-  FiClock,
   FiMapPin,
-  FiUser,
+  FiCalendar,
 } from "react-icons/fi";
-import DashboardHeader from "./DashboardHeader";
-import StatCard from "./StatCard";
-import QuickActionCard from "./QuickActionCard";
-import RecentOrderCard from "./RecentOrderCard";
 
+import { useAuth } from "../../context/AuthContext";
 
-const Dashboard = () => {
-  /*
-    Temporary Data
+import ProfileHeader from "./ProfileHeader";
+import StatsCard from "./StatsCard";
+import CompletionCard from "./CompleteCard";
+import QuickActions from "./QuickActions";
+import RecentOrders from "./RecentOrders";
 
-    Will be replaced with API later
-  */
+const Dashboard = ({ setActiveTab }) => {
+  const { user } = useAuth();
 
-  const recentOrders = [
-    {
-      _id: "6874abc1ff22345",
-      status: "Pending",
-      total: 215000,
-      createdAt: new Date(),
-    },
-    {
-      _id: "6874abc1ff22346",
-      status: "Delivered",
-      total: 148000,
-      createdAt: new Date(),
-    },
-  ];
+  // Temporary data
+  // Will be replaced with API data later
+  const hour = new Date().getHours();
+
+const greeting =
+  hour < 12
+    ? "Good Morning"
+    : hour < 18
+    ? "Good Afternoon"
+    : "Good Evening";
+
+  const recentOrders = [];
+
+  const totalOrders = 0;
+  const wishlistCount = 0;
+  const addressCount = 0;
+
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          year: "numeric",
+        }
+      )
+    : "--";
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8">
 
-      <DashboardHeader />
+      {/* ====================================================== */}
+      {/* Profile Header */}
+      {/* ====================================================== */}
 
-      {/* Statistics */}
+      <ProfileHeader user={user}  greeting={greeting} setActiveTab={setActiveTab} />
+
+      {/* ====================================================== */}
+      {/* Dashboard Overview */}
+      {/* ====================================================== */}
 
       <section>
 
-        <div className="mb-5">
+        <div className="mb-6 flex items-center justify-between">
 
-          <h2 className="text-2xl font-bold">
+          <div>
 
-            Overview
+            <h2 className="text-2xl font-bold text-white">
+              Dashboard Overview
+            </h2>
 
-          </h2>
+            <p className="mt-1 text-gray-400">
+              Here's a quick summary of your account.
+            </p>
+
+          </div>
 
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-6
+            sm:grid-cols-2
+            xl:grid-cols-4
+          "
+        >
 
-          <StatCard
+          <StatsCard
             title="Orders"
-            value="18"
+            value={totalOrders}
+            subtitle="Start Shopping"
             icon={<FiPackage />}
-            color="from-indigo-500 to-indigo-700"
+            color="indigo"
+            link="/profile/orders"
           />
 
-          <StatCard
+          <StatsCard
             title="Wishlist"
-            value="8"
+            value={wishlistCount}
+            subtitle="Products Saved"
             icon={<FiHeart />}
-            color="from-pink-500 to-rose-600"
+            color="pink"
+            link="/wishlist"
           />
 
-          <StatCard
-            title="Cart"
-            value="2"
-            icon={<FiShoppingCart />}
-            color="from-amber-500 to-orange-600"
-          />
-
-          <StatCard
-            title="Pending"
-            value="3"
-            icon={<FiClock />}
-            color="from-yellow-500 to-yellow-700"
-          />
-
-        </div>
-
-      </section>
-
-      {/* Quick Actions */}
-
-      <section>
-
-        <div className="mb-5">
-
-          <h2 className="text-2xl font-bold">
-
-            Quick Actions
-
-          </h2>
-
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-
-          <QuickActionCard
-            to="/orders"
-            title="My Orders"
-            subtitle="Track and manage all your orders."
-            icon={<FiPackage />}
-          />
-
-          <QuickActionCard
-            to="/profile"
-            title="Edit Profile"
-            subtitle="Update your personal information."
-            icon={<FiUser />}
-          />
-
-          <QuickActionCard
-            to="/profile/address"
-            title="Saved Addresses"
-            subtitle="Manage delivery addresses."
+          <StatsCard
+            title="Addresses"
+            value={addressCount}
+            subtitle="Manage Delivery"
             icon={<FiMapPin />}
+            color="emerald"
+            link="/profile/address"
           />
 
-          <QuickActionCard
-            to="/wishlist"
-            title="Wishlist"
-            subtitle="Products you saved for later."
-            icon={<FiHeart />}
+          <StatsCard
+            title="Member Since"
+            value={memberSince}
+            subtitle="Trusted Member"
+            icon={<FiCalendar />}
+            color="amber"
           />
 
         </div>
 
       </section>
 
-      {/* Recent Orders */}
+            {/* ====================================================== */}
+      {/* Profile Completion & Quick Actions */}
+      {/* ====================================================== */}
 
       <section>
 
-        <div className="mb-5 flex items-center justify-between">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
 
-          <h2 className="text-2xl font-bold">
+          {/* Profile Completion */}
 
-            Recent Orders
+          <div className="xl:col-span-2">
 
-          </h2>
+            <CompletionCard user={user} />
 
-        </div>
+          </div>
 
-        <div className="space-y-5">
+          {/* Quick Actions */}
 
-          {recentOrders.map((order) => (
-            <RecentOrderCard
-              key={order._id}
-              order={order}
-            />
-          ))}
+          <QuickActions setActiveTab={setActiveTab} />
 
         </div>
+
+      </section>
+
+      {/* ====================================================== */}
+      {/* Recent Orders */}
+      {/* ====================================================== */}
+
+      <section>
+
+        <RecentOrders
+          orders={recentOrders}
+        />
 
       </section>
 

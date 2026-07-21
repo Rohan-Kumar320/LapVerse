@@ -6,6 +6,7 @@ import {
   FiLock,
   FiSettings,
   FiLogOut,
+  FiMessageSquare,
 } from "react-icons/fi";
 
 import { useNavigate } from "react-router-dom";
@@ -21,6 +22,11 @@ const menu = [
     key: "orders",
     title: "My Orders",
     icon: <FiPackage />,
+  },
+  {
+    key: "reviews",
+    title: "My Reviews",
+    icon: <FiMessageSquare />,
   },
   {
     key: "wishlist",
@@ -43,7 +49,6 @@ const menu = [
     icon: <FiSettings />,
   },
 ];
-
 const ProfileSidebar = ({
   activeTab,
   setActiveTab,
@@ -67,7 +72,7 @@ const ProfileSidebar = ({
         ${
           mobile
             ? "w-full h-full"
-            : "sticky top-24 w-80 max-h-[calc(100vh-7rem)]"
+            : "sticky top-24 w-72 max-h-[calc(100vh-7rem)]"
         }
 
          overflow-y-auto
@@ -80,67 +85,19 @@ const ProfileSidebar = ({
     >
       {/* Profile */}
 
-      <div
-        className="
-          relative
-          overflow-hidden
-          bg-gradient-to-br
-          from-primary
-          via-indigo-600
-          to-blue-700
-          p-8
-          text-white
-        "
-      >
-        <div
-          className="
-            absolute
-            -right-10
-            -top-10
-            h-40
-            w-40
-            rounded-full
-            bg-white/10
-          "
-        />
+{/* Navigation Header */}
 
-        <div
-          className="
-            relative
-            flex
-            flex-col
-            items-center
-          "
-        >
-          <img
-            src={
-              user?.avatar ||
-              `https://ui-avatars.com/api/?background=ffffff&color=4f46e5&name=${encodeURIComponent(
-                user?.name || "User"
-              )}`
-            }
-            alt="avatar"
-            className="
-              h-24
-              w-24
-              rounded-full
-              border-4
-              border-white
-              object-cover
-              shadow-xl
-            "
-          />
+<div className="border-b border-border px-6 py-5">
 
-          <h2 className="mt-5 text-xl font-bold">
-            {user?.name}
-          </h2>
+  <h2 className="text-lg font-bold text-white">
+    My Account
+  </h2>
 
-          <p className="mt-1 text-sm text-white/80">
-            {user?.email}
-          </p>
-        </div>
-      </div>
+  <p className="mt-1 text-sm text-gray-400">
+    Manage your account and preferences
+  </p>
 
+</div>
       {/* Navigation */}
 
       <div className="p-4">
@@ -148,84 +105,114 @@ const ProfileSidebar = ({
         <div className="space-y-2">
 
           {menu.map((item) => (
-            <button
-              key={item.key}
-              onClick={() =>
-                setActiveTab(item.key)
-              }
-              className={`
-                flex
-                w-full
-                items-center
-                gap-4
-                rounded-2xl
-                px-5
-                py-4
-                text-left
-                transition-all
-                duration-300
+<button
+  key={item.key}
+  onClick={() => setActiveTab(item.key)}
+  className={`
+    group
+    relative
+    flex
+    w-full
+    items-center
+    gap-4
+    overflow-hidden
+    rounded-2xl
+    px-5
+    py-4
+    transition-all
+    duration-300
 
-                ${
-                  activeTab === item.key
-                    ? "bg-primary text-white shadow-lg"
-                    : "hover:bg-primary/10"
-                }
-              `}
-            >
-              <div
-                className={`
-                  flex
-                  h-11
-                  w-11
-                  items-center
-                  justify-center
-                  rounded-xl
+    ${
+      activeTab === item.key
+        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+        : "text-gray-300 hover:bg-[#1a2235] hover:text-white"
+    }
+  `}
+>
 
-                  ${
-                    activeTab === item.key
-                      ? "bg-white/20"
-                      : "bg-primary/10 text-primary"
-                  }
-                `}
-              >
-                {item.icon}
-              </div>
+  {activeTab === item.key && (
+    <div
+      className="
+        absolute
+        left-0
+        top-2
+        bottom-2
+        w-1
+        rounded-r-full
+        bg-white
+      "
+    />
+  )}
 
-              <span className="font-medium">
-                {item.title}
-              </span>
-            </button>
-          ))}
+  <div
+    className={`
+      flex
+      h-11
+      w-11
+      items-center
+      justify-center
+      rounded-xl
+      transition-all
+
+      ${
+        activeTab === item.key
+          ? "bg-white/20"
+          : "bg-[#1f2937] group-hover:bg-indigo-500/20"
+      }
+    `}
+  >
+    {item.icon}
+  </div>
+
+  <span className="font-medium">
+    {item.title}
+  </span>
+
+</button>          ))}
 
         </div>
 
         <div className="my-6 border-t border-border" />
 
-        <button
-          onClick={handleLogout}
-          className="
-            flex
-            w-full
-            items-center
-            justify-center
-            gap-3
-            rounded-2xl
-            border
-            border-red-500
-            py-4
-            font-semibold
-            text-red-500
-            transition-all
-            duration-300
-            hover:bg-red-500
-            hover:text-white
-          "
-        >
-          <FiLogOut />
+<button
+  onClick={handleLogout}
+  className="
+    flex
+    w-full
+    items-center
+    gap-4
+    rounded-2xl
+    border
+    border-red-500/40
+    px-5
+    py-4
+    font-medium
+    text-red-400
+    transition-all
+    duration-300
+    hover:border-red-500
+    hover:bg-red-500
+    hover:text-white
+  "
+>
 
-          Logout
-        </button>
+  <div
+    className="
+      flex
+      h-11
+      w-11
+      items-center
+      justify-center
+      rounded-xl
+      bg-red-500/10
+    "
+  >
+    <FiLogOut />
+  </div>
 
+  Logout
+
+</button>
       </div>
     </aside>
   );

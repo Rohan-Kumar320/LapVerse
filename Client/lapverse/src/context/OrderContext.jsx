@@ -75,7 +75,7 @@ export const OrderProvider = ({
     }
   };
 
-  const cancel = async (id) => {
+  const cancelUserOrder  = async (id) => {
     try {
       const data =
         await cancelOrder(id);
@@ -106,7 +106,7 @@ export const OrderProvider = ({
         fetchOrders,
         fetchOrder,
         placeOrder,
-        cancel,
+        cancelUserOrder,
       }}
     >
       {children}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import {
   FiArrowLeft,
@@ -6,7 +7,16 @@ import {
 } from "react-icons/fi";
 import ProfileSidebar from "../components/profile/ProfileSidebar";
 import Dashboard from "../components/profile/Dashboard";
-
+import EditProfile from "../components/profile/EditProfile";
+import Addresses from "../components/profile/Addresses";
+import Orders from "./Orders";
+import ProfileReviewCard from "../components/profile/ProfileReviewCard";
+import { useReviews } from "../context/ReviewContext";
+import DeleteConfirmationModal from "../components/common/DeleteConfirmationModal";
+import EditReviewModal from "../components/profile/EditReviewModal";
+import ProfileWishlist from "../components/profile/ProfileWishlist";
+import Security from "../components/profile/security/Security";
+import DeletionBanner from "../components/profile/security/DeletionBanner";
 
 const Profile = () => {
   const [activeTab, setActiveTab] =
@@ -24,6 +34,94 @@ const Profile = () => {
       "auto";
   };
 }, [showMenu]);
+
+const location = useLocation();
+
+const {
+  myReviews,
+  fetchMyReviews,
+  removeReview,
+  updateUserReview,
+} = useReviews();
+
+const [deleting, setDeleting] = useState(null);
+const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [selectedReview, setSelectedReview] = useState(null);
+const [showEditModal, setShowEditModal] = useState(false);
+const [updatingReview, setUpdatingReview] = useState(false);
+
+useEffect(() => {
+  if (location.state?.tab) {
+    setActiveTab(location.state.tab);
+  }
+}, [location.state]);
+
+useEffect(() => {
+  if (activeTab === "reviews") {
+    fetchMyReviews();
+  }
+}, [activeTab]);
+
+const handleDelete = (review) => {
+
+  setSelectedReview(review);
+
+  setShowDeleteModal(true);
+
+};
+
+const confirmDelete = async () => {
+
+  if (!selectedReview) return;
+
+  setDeleting(selectedReview._id);
+
+  const result = await removeReview(selectedReview._id);
+
+  if (result.success) {
+
+    setShowDeleteModal(false);
+
+    setSelectedReview(null);
+
+  }
+
+  setDeleting(null);
+
+};
+
+const handleEdit = (review) => {
+
+  setSelectedReview(review);
+
+  setShowEditModal(true);
+
+};
+const saveReview = async (reviewData) => {
+
+  if (!selectedReview) return;
+
+  setUpdatingReview(true);
+
+  const result = await updateUserReview(
+    selectedReview._id,
+    reviewData
+  );
+
+  if (result.success) {
+
+    setShowEditModal(false);
+
+    setSelectedReview(null);
+
+    await fetchMyReviews();
+
+  }
+
+  setUpdatingReview(false);
+
+};
+
 
   return (
     <main className="min-h-screen bg-background">
@@ -160,16 +258,99 @@ const Profile = () => {
 
         <section className="flex-1">
 
+          <DeletionBanner />
+
           {activeTab === "dashboard" && (
-            <Dashboard />
+            <Dashboard setActiveTab={setActiveTab} />
           )}
 
-          {/* We'll add the remaining tabs here */}
+{activeTab === "edit-profile" && (
+  <EditProfile setActiveTab={setActiveTab} />
+)}
+{activeTab === "addresses" && (
+    <Addresses />
+)}
+{activeTab === "orders" && (
+  <Orders />
+)}
 
+{activeTab === "security" && (
+  <Security />
+)}
+
+
+{activeTab === "wishlist" && (
+  <ProfileWishlist />
+)}
+
+{activeTab === "reviews" && (
+
+<div className="space-y-6">
+
+  {myReviews.length === 0 ? (
+
+    <div className="rounded-3xl border border-border bg-card py-20 text-center">
+
+      <h2 className="text-2xl font-bold">
+        No Reviews Yet
+      </h2>
+
+      <p className="mt-3 text-text-secondary">
+        Your reviews will appear here.
+      </p>
+
+    </div>
+
+  ) : (
+
+    myReviews.map((review) => (
+
+      <ProfileReviewCard
+        key={review._id}
+        review={review}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        deleting={deleting}
+      />
+
+    ))
+
+  )}
+
+</div>
+
+)}
         </section>
 
       </div>
+      <DeleteConfirmationModal
+  isOpen={showDeleteModal}
+  title="Delete Review"
+  message="Are you sure you want to permanently delete this review? This action cannot be undone."
+  loading={!!deleting}
+  onClose={() => {
 
+    setShowDeleteModal(false);
+
+    setSelectedReview(null);
+
+  }}
+  onConfirm={confirmDelete}
+/>
+
+<EditReviewModal
+  isOpen={showEditModal}
+  review={selectedReview}
+  loading={updatingReview}
+  onClose={() => {
+
+    setShowEditModal(false);
+
+    setSelectedReview(null);
+
+  }}
+  onSave={saveReview}
+/>
     </main>
   );
 };

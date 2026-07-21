@@ -2,35 +2,82 @@ import { useEffect, useMemo, useState } from "react";
 import { FiStar } from "react-icons/fi";
 
 import { getProductReviews } from "../../services/reviewServices";
+
+
 import RatingProgress from "./RatingProgress";
 import ReviewCard from "./ReviewCard";
+import WriteReviewModal from "./WriteReviewModal";
+import { useReviews } from "../../context/ReviewContext";
 
 const ReviewSummary = ({ product }) => {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [visibleReviews, setVisibleReviews] = useState(4);
+const { checkCanReview } = useReviews();
+
+const [reviews, setReviews] = useState([]);
+
+const [loading, setLoading] =
+  useState(true);
+
+const [visibleReviews, setVisibleReviews] =
+  useState(4);
+
+const [canReview, setCanReview] =
+  useState(false);
+
+const [showReviewModal, setShowReviewModal] =
+  useState(false);
 
 
-  useEffect(() => {
-    if (product?._id) {
-      fetchReviews();
-    }
-  }, [product]);
+useEffect(() => {
 
-  const fetchReviews = async () => {
-    try {
-      setLoading(true);
+  if (product?._id) {
 
-      const data = await getProductReviews(product._id);
+    loadData();
 
-      setReviews(data.reviews || []);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }
 
+}, [product]);
+
+const fetchReviews = async () => {
+
+  try {
+
+    const data =
+      await getProductReviews(product._id);
+
+    setReviews(data.reviews || []);
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+};
+
+const loadData = async () => {
+
+  try {
+
+    setLoading(true);
+
+    await fetchReviews();
+
+    const permission =
+      await checkCanReview(product._id);
+
+    setCanReview(permission.canReview);
+
+  } catch (error) {
+
+    console.error(error);
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
   // Rating Statistics
 
   const averageRating = useMemo(() => {
@@ -153,22 +200,30 @@ const ReviewSummary = ({ product }) => {
 
           </div>
 
-          <button
-            className="
-              mt-8
-              w-full
-              rounded-2xl
-              bg-primary
-              py-3
-              font-semibold
-              text-white
-              transition
-              hover:scale-[1.02]
-            "
-          >
-            Write a Review
-          </button>
+{canReview && (
 
+<button
+onClick={() =>
+setShowReviewModal(true)
+}
+className="
+mt-8
+w-full
+rounded-2xl
+bg-primary
+py-3
+font-semibold
+text-white
+transition
+hover:scale-[1.02]
+"
+>
+
+Write a Review
+
+</button>
+
+)}
         </div>
 
         {/* Reviews */}
@@ -243,6 +298,17 @@ const ReviewSummary = ({ product }) => {
   )
 }
       </div>
+
+      <WriteReviewModal
+  open={showReviewModal}
+  onClose={() => setShowReviewModal(false)}
+  productId={product._id}
+  onSuccess={async () => {
+    setShowReviewModal(false);
+
+    await loadData();
+  }}
+/>
 
     </section>
   );

@@ -3,7 +3,12 @@ import {
   loginUser,
   registerUser,
   getProfile,
+  updateProfile as updateProfileService,
+  uploadAvatar as uploadAvatarService,
+removeAvatar as removeAvatarService,
+changePassword
 } from "../services/authService";
+import { requestAccountDeletion, restoreAccount } from "../services/userService";
 
 const AuthContext = createContext();
 
@@ -38,21 +43,127 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (credentials) => {
-    const data = await loginUser(credentials);
+  const updateProfile = async (profileData) => {
+  const data = await updateProfileService(profileData);
 
-    localStorage.setItem("token", data.token);
+  setUser(data.user);
 
-    setUser(data.user);
+  return data;
+};
 
-    return data;
-  };
+const uploadAvatar = async (file) => {
+  const data = await uploadAvatarService(file);
+
+  setUser(data.user);
+
+  return data;
+};
+
+const login = async (credentials) => {
+
+  const data = await loginUser(credentials);
+
+  localStorage.setItem("token", data.token);
+
+  // Fetch the latest profile
+  await loadUser();
+
+  return data;
+
+};
+
 
   const register = async (userData) => {
     const data = await registerUser(userData);
 
     return data;
   };
+
+  const removeAvatar = async () => {
+
+  const data =
+    await removeAvatarService();
+
+  setUser(data.user);
+
+  return data;
+
+};
+
+const updatePassword = async (passwordData) => {
+  try {
+
+    const data = await changePassword(passwordData);
+
+    return {
+      success: true,
+      message: data.message,
+    };
+
+  } catch (error) {
+
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        "Unable to change password.",
+    };
+
+  }
+};
+
+const deleteAccountRequest = async () => {
+
+  try {
+
+    const data = await requestAccountDeletion();
+
+    // Refresh user immediately
+    await loadUser();
+
+    return {
+      success: true,
+      message: data.message,
+    };
+
+  } catch (error) {
+
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        "Unable to submit deletion request.",
+    };
+
+  }
+
+};
+
+const restoreUserAccount = async () => {
+
+  try {
+
+    const data = await restoreAccount();
+
+    await loadUser();
+
+    return {
+      success: true,
+      message: data.message,
+    };
+
+  } catch (error) {
+
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        "Unable to restore account.",
+    };
+
+  }
+
+};
 
 const logout = () => {
   localStorage.removeItem("token");
@@ -69,6 +180,12 @@ const logout = () => {
         register,
         logout,
         refreshUser: loadUser,
+        updateProfile,
+        uploadAvatar,
+        removeAvatar,
+        updatePassword,
+        deleteAccountRequest,
+        restoreUserAccount
       }}
     >
       {children}

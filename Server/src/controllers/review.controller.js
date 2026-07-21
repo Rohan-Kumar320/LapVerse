@@ -1,5 +1,6 @@
 import Review from "../models/Review.js";
 import Product from "../models/Product.js";
+import Order from "../models/Order.js";
 
 //For Calculating Product Rating Automatically / Helper
 const updateProductRating = async (productId) => {
@@ -43,7 +44,7 @@ export const createReview = async (req, res) => {
     if (existingReview) {
       return res.status(400).json({
         success: false,
-        message: "You have already reviewed this product.",
+        message: "You have already reviewed this product. To Edit Please go to your profile",
       });
     }
 
@@ -148,6 +149,112 @@ export const getProductReviews = async (req, res) => {
   }
 };
 
+
+
+// Can User Review Product
+
+export const canReviewProduct = async (req, res) => {
+
+  try {
+
+    // const productId = req.params.productId;
+
+    // const userId = req.user._id;
+
+    // const existingReview = await Review.findOne({
+
+    //   user: userId,
+
+    //   product: productId,
+
+    // });
+
+    // if (existingReview) {
+
+    //   return res.status(200).json({
+
+    //     success: true,
+
+    //     canReview: false,
+
+    //     alreadyReviewed: true,
+
+    //     hasPurchased: true,
+
+    //   });
+
+    // }
+
+    // const order = await Order.findOne({
+
+    //   user: userId,
+
+    //   status: "Delivered",
+
+    //   "items.product": productId,
+
+    // });
+ const userId = req.user._id;
+    const productId = req.params.productId;
+
+const orders = await Order.find({
+  user: req.user._id,
+}).populate("items.product");
+
+console.log(JSON.stringify(orders, null, 2));
+
+const order = await Order.findOne({
+  user: req.user._id,
+  status: "Delivered",
+  "items.product": productId,
+});
+
+console.log("Matched Order:", order);
+
+    if (!order) {
+
+      return res.status(200).json({
+
+        success: true,
+
+        canReview: false,
+
+        alreadyReviewed: false,
+
+        hasPurchased: false,
+
+      });
+
+    }
+
+    res.status(200).json({
+
+      success: true,
+
+      canReview: true,
+
+      alreadyReviewed: false,
+
+      hasPurchased: true,
+
+    });
+
+  }
+
+  catch (error) {
+
+    res.status(500).json({
+
+      success: false,
+
+      message: error.message,
+
+    });
+
+  }
+
+};
+
 //Delete A Review
 export const deleteReview = async (req, res) => {
   try {
@@ -186,5 +293,37 @@ export const deleteReview = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+// Get Logged In User Reviews
+export const getMyReviews = async (req, res) => {
+  try {
+
+    const reviews = await Review.find({
+      user: req.user._id,
+    })
+      .populate({
+        path: "product",
+        select:
+          "title images averageRating numReviews",
+      })
+      .sort({
+        createdAt: -1,
+      });
+
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      reviews,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
   }
 };

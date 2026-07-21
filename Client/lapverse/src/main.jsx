@@ -9,6 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { CartProvider } from "./context/CartContext";
 import { OrderProvider } from "./context/OrderContext";
+import { ReviewProvider } from "./context/ReviewContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -16,16 +17,19 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <WishlistProvider>
       <CartProvider>
         <OrderProvider>
+          <ReviewProvider>
     <App />
+          </ReviewProvider>
         </OrderProvider>
       </CartProvider>
-     <ToastContainer
+    </WishlistProvider>
+  </AuthProvider>
+       <ToastContainer
         position="top-right"
         autoClose={2500}
         newestOnTop
         theme="dark"
         />
-    </WishlistProvider>
-  </AuthProvider>
+
   </BrowserRouter>
 );
