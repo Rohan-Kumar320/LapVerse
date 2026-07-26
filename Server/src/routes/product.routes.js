@@ -1,5 +1,5 @@
 import express from "express";
-import { createProduct, getProduct, getProducts, updateProduct, deleteProduct } from "../controllers/product.controller.js";
+import { createProduct, getProduct, getProducts, updateProduct, deleteProduct, getSellerProducts, updateProductStock } from "../controllers/product.controller.js";
 import protect from "../middleware/auth.middleware.js";
 import { validateProduct, validateProductUpdate } from "../validators/product.validator.js";
 import validate from "../middleware/validation.middleware.js";
@@ -17,6 +17,11 @@ router.post(
 );
 
 router.get("/", getProducts);
+router.get(
+  "/seller/my-products",
+  protect,
+  getSellerProducts
+);
 router.get("/:id", getProduct);
 
 router.put(
@@ -27,7 +32,15 @@ router.put(
   validate,
   updateProduct
 );
-
-router.delete("/:id", protect, deleteProduct);
-
+router.put(
+  "/:id/stock",
+  protect,
+  updateProductStock
+);
+// router.delete("/:id", protect, deleteProduct);
+router.delete(
+  "/seller/:id",
+  protect,
+  deleteProduct
+);
 export default router;

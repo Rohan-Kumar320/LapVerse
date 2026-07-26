@@ -17,6 +17,13 @@ import Orders from "../pages/Orders";
 import OrderDetails from "../components/orders/OrderDetails";
 import Checkout from "../pages/Checkout";
 import Profile from "../pages/Profile";
+import SellerProtectedRoute from "../seller/routes/SellerProtectedRoute";
+import SellerLayout from "../seller/layout/SellerLayout";
+import Dashboard from "../seller/pages/Dashboard";
+import AddProduct from "../seller/pages/AddProduct";
+import SellerProducts from "../seller/pages/SellerProducts";
+import SellerProductDetails from "../seller/pages/SellerProductDetails";
+import EditProduct from "../seller/pages/EditProduct";
 
 const AppRoutes = () => {
   return (
@@ -105,6 +112,29 @@ const AppRoutes = () => {
         <Route path="/logout" element={<Logout />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
+
+        <Route
+  path="/seller"
+  element={
+    <SellerProtectedRoute>
+      <SellerLayout />
+    </SellerProtectedRoute>
+  }
+>
+  <Route index element={<Dashboard />} />
+  <Route path="products" element={<SellerProducts />} />
+  <Route
+    path="products/:id"
+    element={<SellerProductDetails />}
+/>
+  <Route path="add-product" element={<AddProduct />} />
+      <Route path="products/:id/edit" element={<EditProduct />} />
+
+  {/* <Route path="orders" element={<Orders />} /> */}
+  {/* <Route path="reviews" element={<Reviews />} /> */}
+  {/* <Route path="analytics" element={<Analytics />} /> */}
+  {/* <Route path="settings" element={<SellerSettings />} /> */}
+</Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

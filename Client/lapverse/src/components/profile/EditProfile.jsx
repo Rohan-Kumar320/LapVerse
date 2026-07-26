@@ -375,7 +375,7 @@ const EditProfile = () => {
     border-4
     border-primary/20
     shadow-xl
-    bg-gradient-to-br
+    bg-linear-to-br
     from-primary
     to-indigo-600
     flex

@@ -7,6 +7,8 @@ import reviewRoutes from "./routes/review.routes.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import sellerRoutes
+from "./routes/seller.routes.js";
 import errorHandler from "./middleware/error.middleware.js";
 
 const app = express();
@@ -26,6 +28,10 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use(
+  "/api/seller",
+  sellerRoutes
+);
 app.use(errorHandler);
 
 // Test Route

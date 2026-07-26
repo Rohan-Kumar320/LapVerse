@@ -45,6 +45,11 @@ export const validateProduct = [
   .isInt({ gt: 0 })
   .withMessage("RAM must be greater than 0"),
 
+  body("stock")
+  .toInt()
+  .isInt({ min: 0 })
+  .withMessage("Stock cannot be negative"),
+
 body("storage")
   .trim()
   .toInt()
@@ -72,6 +77,11 @@ body("battery")
     .trim()
     .notEmpty()
     .withMessage("Description is required"),
+
+    body("discount")
+  .toFloat()
+  .isFloat({ min: 0, max: 100 })
+  .withMessage("Discount must be between 0 and 100"),
 
   body("condition")
   .trim()
@@ -140,6 +150,12 @@ export const validateProductUpdate = [
   .isInt({ gt: 0 })
   .withMessage("RAM must be greater than 0"),
 
+  body("stock")
+  .optional()
+  .toInt()
+  .isInt({ min: 0 })
+  .withMessage("Stock cannot be negative"),
+
 body("storage")
 .optional()
   .trim()
@@ -152,6 +168,12 @@ body("storage")
     .trim()
     .notEmpty()
     .withMessage("GPU is required"),
+
+    body("discount")
+  .optional()
+  .toFloat()
+  .isFloat({ min: 0, max: 100 })
+  .withMessage("Discount must be between 0 and 100"),
 
   body("screenSize")
   .optional()

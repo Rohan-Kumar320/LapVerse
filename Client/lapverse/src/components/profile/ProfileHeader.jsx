@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { FiEdit2, FiCamera } from "react-icons/fi";
+import { useSeller } from "../../context/SellerContext";
 
 const ProfileHeader = ({ user, greeting, setActiveTab }) => {
 
@@ -11,13 +12,15 @@ const ProfileHeader = ({ user, greeting, setActiveTab }) => {
       })
     : "Recently";
 
-  const role =
-    user?.roles?.includes("admin")
-      ? "Administrator"
-      : user?.roles?.includes("seller")
-      ? "Seller"
-      : "Customer";
+    const { activeMode } = useSeller();
 
+
+const role =
+  user?.roles?.includes("admin")
+    ? "Administrator"
+    : activeMode === "seller"
+    ? "Seller"
+    : "Customer";
   return (
     <div
       className="

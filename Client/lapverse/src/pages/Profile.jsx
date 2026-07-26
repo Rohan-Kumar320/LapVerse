@@ -17,6 +17,7 @@ import EditReviewModal from "../components/profile/EditReviewModal";
 import ProfileWishlist from "../components/profile/ProfileWishlist";
 import Security from "../components/profile/security/Security";
 import DeletionBanner from "../components/profile/security/DeletionBanner";
+import Settings from "../components/profile/settings/Settings";
 
 const Profile = () => {
   const [activeTab, setActiveTab] =
@@ -272,6 +273,9 @@ const saveReview = async (reviewData) => {
 )}
 {activeTab === "orders" && (
   <Orders />
+)}
+{activeTab === "settings" && (
+  <Settings />
 )}
 
 {activeTab === "security" && (

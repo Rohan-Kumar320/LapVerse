@@ -176,6 +176,45 @@ export const getProduct = async (req, res) => {
   }
 };
 
+export const getSellerProducts = async (req, res) => {
+
+  try {
+
+    const products = await Product.find({
+
+      seller: req.user._id,
+
+    })
+      .sort({
+        createdAt: -1,
+      });
+
+    res.status(200).json({
+
+      success: true,
+
+      count: products.length,
+
+      products,
+
+    });
+
+  }
+
+  catch (error) {
+
+    res.status(500).json({
+
+      success: false,
+
+      message: error.message,
+
+    });
+
+  }
+
+};
+
 //Update Products
 export const updateProduct = async (req, res) => {
   try {
@@ -200,12 +239,11 @@ export const updateProduct = async (req, res) => {
     }
 
     // Parse deleted images
-    let deletedImages = [];
+let deletedImages = req.body.deletedImages || [];
 
-    if (req.body.deletedImages) {
-      deletedImages = JSON.parse(req.body.deletedImages);
-    }
-
+if (!Array.isArray(deletedImages)) {
+  deletedImages = [deletedImages];
+}
     // Delete images from Cloudinary
     for (const publicId of deletedImages) {
       await deleteFromCloudinary(publicId);
@@ -217,8 +255,9 @@ export const updateProduct = async (req, res) => {
     );
 
 // Check image limit before uploading
-    const remainingImages = product.images.length - deletedImages.length;
-    const newImageCount = req.files ? req.files.length : 0;
+const remainingImages =
+  product.images.length;
+      const newImageCount = req.files ? req.files.length : 0;
 
     if (remainingImages + newImageCount > 5) {
       return res.status(400).json({
@@ -255,7 +294,8 @@ export const updateProduct = async (req, res) => {
     product.battery = req.body.battery ?? product.battery;
     product.description = req.body.description ?? product.description;
     product.condition = req.body.condition ?? product.condition;
-
+product.stock =
+  req.body.stock ?? product.stock;
     product.images = updatedImages;
 
     await product.save();
@@ -275,6 +315,8 @@ export const updateProduct = async (req, res) => {
 
 //Delete Product
 export const deleteProduct = async (req, res) => {
+  console.log("DELETE ROUTE HIT");
+  console.log(req.params.id);
   try {
     const product = await Product.findById(req.params.id);
 
@@ -313,5 +355,48 @@ export const deleteProduct = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+export const updateProductStock = async (req, res) => {
+  try {
+    const { stock } = req.body;
+
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    if (
+      product.seller.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized.",
+      });
+    }
+
+    product.stock = Number(stock);
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Stock updated successfully.",
+      product,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
   }
 };

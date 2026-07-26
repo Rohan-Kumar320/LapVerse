@@ -168,6 +168,9 @@ const restoreUserAccount = async () => {
 const logout = () => {
   localStorage.removeItem("token");
   setUser(null);
+  localStorage.removeItem(
+  "activeMode"
+);
 };
 
   return (

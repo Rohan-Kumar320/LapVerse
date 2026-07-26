@@ -10,6 +10,7 @@ import { WishlistProvider } from "./context/WishlistContext";
 import { CartProvider } from "./context/CartContext";
 import { OrderProvider } from "./context/OrderContext";
 import { ReviewProvider } from "./context/ReviewContext";
+import { SellerProvider } from "./context/SellerContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -18,7 +19,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <CartProvider>
         <OrderProvider>
           <ReviewProvider>
+            <SellerProvider>
     <App />
+            </SellerProvider>
           </ReviewProvider>
         </OrderProvider>
       </CartProvider>

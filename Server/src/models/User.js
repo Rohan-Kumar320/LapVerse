@@ -100,6 +100,11 @@ roles: {
   enum: ["user", "seller", "admin"],
   default: ["user"],
 },
+activeMode: {
+  type: String,
+  enum: ["user", "seller"],
+  default: "user",
+},
     deletionRequested: {
   type: Boolean,
   default: false,
