@@ -24,6 +24,9 @@ import AddProduct from "../seller/pages/AddProduct";
 import SellerProducts from "../seller/pages/SellerProducts";
 import SellerProductDetails from "../seller/pages/SellerProductDetails";
 import EditProduct from "../seller/pages/EditProduct";
+import SellerOrders from "../seller/pages/SellerOrders";
+import SellerReviews from "../seller/pages/SellerReviews";
+import SellerAnalytics from "../seller/pages/SellerAnalytics";
 
 const AppRoutes = () => {
   return (
@@ -130,9 +133,9 @@ const AppRoutes = () => {
   <Route path="add-product" element={<AddProduct />} />
       <Route path="products/:id/edit" element={<EditProduct />} />
 
-  {/* <Route path="orders" element={<Orders />} /> */}
-  {/* <Route path="reviews" element={<Reviews />} /> */}
-  {/* <Route path="analytics" element={<Analytics />} /> */}
+  <Route path="orders" element={<SellerOrders />} />
+  <Route path="reviews" element={<SellerReviews />} />
+  <Route path="analytics" element={<SellerAnalytics />} />
   {/* <Route path="settings" element={<SellerSettings />} /> */}
 </Route>
         <Route path="*" element={<NotFound />} />

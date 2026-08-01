@@ -12,6 +12,9 @@ router.get("/seller", protect, getSellerOrders);
 router.get("/", protect, getAllOrders);
 router.get("/:id", protect, getOrderById);
 router.put("/:id/cancel", protect, cancelOrder);
-router.put("/:id/status", protect, validateUpdateOrderStatus, validate, updateOrderStatus);
-
+router.put(
+  "/:id/status",
+  protect,
+  updateOrderStatus
+);
 export default router;

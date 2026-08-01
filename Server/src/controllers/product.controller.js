@@ -12,22 +12,49 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    const uploadedImages = [];
+    // const uploadedImages = [];
 
-    for (const file of req.files) {
-      const image = await uploadToCloudinary(file.buffer);
+    // for (const file of req.files) {
+    //   const image = await uploadToCloudinary(file.buffer);
 
-      uploadedImages.push({
-        url: image.url,
-        public_id: image.public_id,
-      });
-    }
+    //   uploadedImages.push({
+    //     url: image.url,
+    //     public_id: image.public_id,
+    //   });
+    // }
+console.time("Image Upload");
+console.log(
+  req.files.map(file => ({
+    name: file.originalname,
+    sizeMB: (file.size / 1024 / 1024).toFixed(2),
+  }))
+);
+
+const uploadedImages = await Promise.all(
+  req.files.map(async (file, index) => {
+    console.time(`Image ${index + 1}`);
+
+    const image = await uploadToCloudinary(file.buffer);
+
+    console.timeEnd(`Image ${index + 1}`);
+
+    return {
+      url: image.url,
+      public_id: image.public_id,
+    };
+  })
+);
+
+console.timeEnd("Image Upload");
+console.time("Mongo");
+
 
     const product = await Product.create({
       ...req.body,
       images: uploadedImages,
       seller: req.user._id,
     });
+    console.timeEnd("Mongo");
 
     res.status(201).json({
       success: true,

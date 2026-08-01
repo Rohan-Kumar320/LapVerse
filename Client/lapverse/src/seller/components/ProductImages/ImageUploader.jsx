@@ -2,6 +2,7 @@ import { useRef } from "react";
 import {
   FiUploadCloud,
 } from "react-icons/fi";
+import { toast } from "react-toastify";
 
 const MAX_IMAGES = 5;
 
@@ -27,7 +28,7 @@ const ImageUploader = ({
       MAX_IMAGES
     ) {
 
-      alert(
+      toast.error(
         `Maximum ${MAX_IMAGES} images allowed.`
       );
 

@@ -18,77 +18,116 @@ export const createOrder = async (req, res) => {
       });
     }
 
-    const items = [];
-    let subtotal = 0;
-    let discount = 0;
+    //----------------------------------------------------
+    // Group cart items by seller
+    //----------------------------------------------------
 
-    // Validate stock & prepare order items
-    for (const item of cart) {
-      if (!item.product) continue;
+    const sellerOrders = {};
 
-      // Check available stock
-      if (item.product.stock < item.quantity) {
+    for (const cartItem of cart) {
+      if (!cartItem.product) continue;
+
+      if (cartItem.product.stock < cartItem.quantity) {
         return res.status(400).json({
           success: false,
-          message: `${item.product.title} has only ${item.product.stock} item(s) left in stock.`,
+          message: `${cartItem.product.title} has only ${cartItem.product.stock} item(s) left in stock.`,
         });
       }
 
-      items.push({
-        product: item.product._id,
-        seller: item.product.seller,
-        quantity: item.quantity,
-        price: item.product.price,
+      const sellerId = cartItem.product.seller.toString();
+
+      if (!sellerOrders[sellerId]) {
+        sellerOrders[sellerId] = {
+          seller: sellerId,
+          items: [],
+          subtotal: 0,
+          discount: 0,
+        };
+      }
+
+      sellerOrders[sellerId].items.push({
+        product: cartItem.product._id,
+        seller: sellerId,
+        quantity: cartItem.quantity,
+        price: cartItem.product.price,
       });
 
-      subtotal += item.product.price * item.quantity;
+      sellerOrders[sellerId].subtotal +=
+        cartItem.product.price * cartItem.quantity;
 
-      discount +=
-        (item.product.price *
-          (item.product.discount || 0) *
-          item.quantity) /
-        100;
+      sellerOrders[sellerId].discount +=
+        (
+          cartItem.product.price *
+          (cartItem.product.discount || 0) *
+          cartItem.quantity
+        ) / 100;
     }
 
-    const total = subtotal - discount;
+    //----------------------------------------------------
+    // Create one order for every seller
+    //----------------------------------------------------
 
-    // Create Order
-    const order = await Order.create({
-      user: req.user._id,
-      items,
-      subtotal,
-      discount,
-      total,
-      paymentMethod,
-      shippingAddress,
-    });
+    const createdOrders = [];
 
-    // Reduce Product Stock
-    for (const item of cart) {
-      if (!item.product) continue;
+    for (const sellerId in sellerOrders) {
+      const currentOrder = sellerOrders[sellerId];
 
-      item.product.stock -= item.quantity;
+      const order = await Order.create({
+        user: req.user._id,
+        seller: sellerId,
+        items: currentOrder.items,
+        subtotal: currentOrder.subtotal,
+        discount: currentOrder.discount,
+        total:
+          currentOrder.subtotal -
+          currentOrder.discount,
+        paymentMethod,
+        shippingAddress,
+      });
 
-      await item.product.save();
+      createdOrders.push(order);
     }
 
-    // Clear User Cart
+    //----------------------------------------------------
+    // Reduce Stock
+    //----------------------------------------------------
+
+    for (const cartItem of cart) {
+      if (!cartItem.product) continue;
+
+      cartItem.product.stock -= cartItem.quantity;
+
+      await cartItem.product.save();
+    }
+
+    //----------------------------------------------------
+    // Clear Cart
+    //----------------------------------------------------
+
     await Cart.deleteMany({
       user: req.user._id,
     });
 
+    //----------------------------------------------------
+
     res.status(201).json({
       success: true,
-      message: "Order placed successfully.",
-      order,
+      message: "Order(s) placed successfully.",
+      count: createdOrders.length,
+      orders: createdOrders,
     });
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
+
+
 //Retrieving the Orders
 export const getMyOrders = async (req, res) => {
   try {
@@ -126,10 +165,18 @@ export const getOrderById = async (req, res) => {
     }
 
     // Owner or Admin only
-    if (
-      order.user._id.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    ) {
+// Buyer OR Seller OR Admin
+if (
+  order.user._id.toString() !== req.user._id.toString() &&
+  order.seller.toString() !== req.user._id.toString() &&
+  req.user.role !== "admin"
+) {
+  return res.status(403).json({
+    success: false,
+    message: "Unauthorized",
+  });
+}
+     {
       return res.status(403).json({
         success: false,
         message: "Unauthorized",
@@ -161,10 +208,17 @@ export const cancelOrder = async (req, res) => {
     }
 
     // Owner or Admin
-    if (
-      order.user.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    ) {
+// Buyer OR Seller OR Admin
+if (
+  order.user.toString() !== req.user._id.toString() &&
+  order.seller.toString() !== req.user._id.toString() &&
+  req.user.role !== "admin"
+) {
+  return res.status(403).json({
+    success: false,
+    message: "Unauthorized",
+  });
+}    {
       return res.status(403).json({
         success: false,
         message: "Unauthorized",
@@ -200,50 +254,29 @@ if (
 //Items Only Seller could see from the order
 export const getSellerOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
+
+    const orders = await Order.find({
+      seller: req.user._id,
+    })
       .populate("user", "name email")
-      .populate("items.product");
-
-    const sellerOrders = [];
-
-    for (const order of orders) {
-      const sellerItems = order.items.filter(
-        (item) =>
-          item.seller.toString() === req.user._id.toString()
-      );
-
-      if (sellerItems.length === 0) continue;
-
-      const subtotal = sellerItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-      );
-
-      sellerOrders.push({
-        _id: order._id,
-        customer: order.user,
-        items: sellerItems,
-        subtotal,
-        status: order.status,
-        paymentMethod: order.paymentMethod,
-        shippingAddress: order.shippingAddress,
-        createdAt: order.createdAt,
-      });
-    }
+      .populate("items.product")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      count: sellerOrders.length,
-      orders: sellerOrders,
+      count: orders.length,
+      orders,
     });
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
-
 
 //Get All Order with Admin Only Access
 export const getAllOrders = async (req, res) => {
@@ -275,17 +308,29 @@ export const getAllOrders = async (req, res) => {
 
 //Update Order Status by Admin
 export const updateOrderStatus = async (req, res) => {
+  console.log("UPDATE STATUS HIT");
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
 
     const { status } = req.body;
+console.log(req.body);
+    let order;
 
-    const order = await Order.findById(req.params.id);
+    // Admin can update any order
+    if (req.user.role === "admin") {
+
+      order = await Order.findById(req.params.id);
+
+    }
+
+    // Seller can update only their own orders
+    else {
+
+      order = await Order.findOne({
+        _id: req.params.id,
+        seller: req.user._id,
+      });
+
+    }
 
     if (!order) {
       return res.status(404).json({
@@ -295,12 +340,15 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     const allowedTransitions = {
-      Pending: ["Confirmed", "Cancelled"],
+      Pending: ["Confirmed"],
       Confirmed: ["Shipped"],
       Shipped: ["Delivered"],
       Delivered: [],
       Cancelled: [],
     };
+
+    console.log(order.status);
+console.log(status);
 
     if (!allowedTransitions[order.status].includes(status)) {
       return res.status(400).json({
@@ -318,10 +366,13 @@ export const updateOrderStatus = async (req, res) => {
       message: "Order status updated successfully.",
       order,
     });
+
   } catch (error) {
+
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };

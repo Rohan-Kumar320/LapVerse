@@ -149,7 +149,7 @@ const ProductCard = ({
             py-1
             text-xs
             font-semibold
-            text-primary
+            text-emerald-500
           "
         >
 
@@ -163,7 +163,7 @@ const ProductCard = ({
 
           <div className="flex items-center gap-3">
 
-            <span className="text-2xl font-bold text-primary">
+            <span className="text-2xl font-bold text-mauve-500">
 
               Rs. {finalPrice.toLocaleString()}
 

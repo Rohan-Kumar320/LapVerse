@@ -19,3 +19,20 @@ export const cancelOrder = async (id) => {
   const { data } = await api.put(`/orders/${id}/cancel`);
   return data;
 };
+
+export const updateOrderStatus = async (
+  id,
+  status
+) => {
+
+  const { data } = await api.put(
+
+    `/orders/${id}/status`,
+
+    { status }
+
+  );
+
+  return data;
+
+};

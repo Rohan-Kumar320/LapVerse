@@ -9,6 +9,8 @@ import cartRoutes from "./routes/cart.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import sellerRoutes
 from "./routes/seller.routes.js";
+import sellerAnalyticsRoutes from "./routes/sellerAnalytics.routes.js";
+import sellerDashboardRoutes from "./routes/sellerDashboardRoutes.routes.js";
 import errorHandler from "./middleware/error.middleware.js";
 
 const app = express();
@@ -32,6 +34,14 @@ app.use(
   "/api/seller",
   sellerRoutes
 );
+app.use(
+    "/api/seller/dashboard",
+    sellerDashboardRoutes
+);
+app.use("/api/seller/analytics", sellerAnalyticsRoutes);
+
+
+
 app.use(errorHandler);
 
 // Test Route

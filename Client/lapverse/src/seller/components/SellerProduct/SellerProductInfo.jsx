@@ -225,7 +225,7 @@ const SellerProductInfo = ({ product }) => {
               py-2
               text-xs
               font-semibold
-              text-primary
+              text-emerald-500
             "
           >
 
@@ -241,7 +241,7 @@ const SellerProductInfo = ({ product }) => {
               py-2
               text-xs
               font-semibold
-              text-blue-600
+              text-emerald-500
             "
           >
 

@@ -7,6 +7,7 @@ import ProductStats from "../components/SellerProduct/ProductStats";
 import ProductToolbar from "../components/SellerProduct/ProductToolbar";
 import EmptyProducts from "../components/SellerProduct/EmptyProducts";
 import ProductGrid from "../components/SellerProduct/ProductGrid";
+import ProductTable from "../components/SellerProduct/ProductTable";
 
 
 const SellerProducts = () => {
@@ -20,6 +21,8 @@ const SellerProducts = () => {
 
   const [loading, setLoading] =
     useState(true);
+
+    const [view, setView] = useState("list");
 
   //----------------------------------------------------
 
@@ -155,11 +158,10 @@ const SellerProducts = () => {
 
       <ProductToolbar
 
-        products={products}
-
-        setFilteredProducts={
-          setFilteredProducts
-        }
+         products={products}
+    setFilteredProducts={setFilteredProducts}
+    view={view}
+    setView={setView}
 
       />
 
@@ -175,17 +177,21 @@ const SellerProducts = () => {
 
         <EmptyProducts />
 
-      ) : (
+      ) : view === "grid" ? (
 
-        <ProductGrid
+  <ProductGrid
+    products={filteredProducts}
+    reload={loadProducts}
+  />
 
-          products={filteredProducts}
+) : (
 
-          reload={loadProducts}
+  <ProductTable
+    products={filteredProducts}
+    reload={loadProducts}
+  />
 
-        />
-
-      )}
+)}
 
     </div>
 

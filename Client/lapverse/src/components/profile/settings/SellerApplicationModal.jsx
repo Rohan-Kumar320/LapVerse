@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import {
   FiX,
@@ -55,21 +55,47 @@ const SellerApplicationModal = ({
 
     });
 
+    const [errors, setErrors] = useState({
+
+  storeName: "",
+
+  phone: "",
+
+  city: "",
+
+  storeAddress: "",
+
+  businessDescription: "",
+
+  cnic: "",
+
+});
+
   if (!open) return null;
 
-  const handleChange = (e) => {
+const handleChange = (e) => {
 
-    setFormData({
+  const { name, value } = e.target;
 
-      ...formData,
+  setFormData((prev) => ({
 
-      [e.target.name]:
-        e.target.value,
+    ...prev,
 
-    });
+    [name]: value,
 
-  };
+  }));
 
+  // Clear error while typing
+
+  setErrors((prev) => ({
+
+    ...prev,
+
+    [name]: "",
+
+  }));
+
+};
   const nextStep = () => {
 
     if (step === 1) {
@@ -88,24 +114,33 @@ const SellerApplicationModal = ({
 
     if (step === 2) {
 
-      if (
+const newErrors = {};
 
-        !formData.storeName ||
+if (!formData.storeName.trim()) {
 
-        !formData.phone ||
+  newErrors.storeName = "Store Name is required.";
 
-        !formData.city
+}
 
-      ) {
+if (!formData.phone.trim()) {
 
-        toast.warning(
-          "Please complete all fields."
-        );
+  newErrors.phone = "Phone Number is required.";
 
-        return;
+}
 
-      }
+if (!formData.city.trim()) {
 
+  newErrors.city = "City is required.";
+
+}
+
+if (Object.keys(newErrors).length) {
+
+  setErrors(newErrors);
+
+  return;
+
+}      
     }
 
     setStep(step + 1);
@@ -120,21 +155,36 @@ const SellerApplicationModal = ({
 
   const handleSubmit = async () => {
 
-    if (
+const newErrors = {};
 
-      !formData.storeAddress || !formData.businessDescription ||
+if (formData.storeAddress.trim().length < 10) {
 
-      !formData.cnic
+  newErrors.storeAddress =
+    "Business address must be at least 10 characters.";
 
-    ) {
+}
 
-      toast.warning(
-        "Please complete all fields."
-      );
+if (formData.businessDescription.trim().length < 20) {
 
-      return;
+  newErrors.businessDescription =
+    "Business description must be at least 20 characters.";
 
-    }
+}
+
+if (!formData.cnic.trim()) {
+
+  newErrors.cnic =
+    "CNIC number is required.";
+
+}
+
+if (Object.keys(newErrors).length > 0) {
+
+  setErrors(newErrors);
+
+  return;
+
+} 
 
     try {
 
@@ -177,19 +227,19 @@ const SellerApplicationModal = ({
       "
     >
 
-      <div
-        className="
-          w-full
-          max-w-3xl
-          overflow-hidden
-          rounded-3xl
-          border
-          border-border
-          bg-card
-          shadow-2xl
-        "
-      >
-
+<div
+  className="
+    w-full
+    max-w-3xl
+    max-h-[90vh]
+    overflow-y-auto
+    rounded-3xl
+    border
+    border-border
+    bg-card
+    shadow-2xl
+  "
+>
         {/* Header */}
 
         <div
@@ -248,7 +298,7 @@ const SellerApplicationModal = ({
 
             {[1,2,3].map((item,index)=>(
 
-              <>
+              <Fragment key={item}>
 
                 <div
 
@@ -302,7 +352,7 @@ const SellerApplicationModal = ({
 
                 )}
 
-              </>
+              </Fragment>
 
             ))}
 
@@ -312,8 +362,15 @@ const SellerApplicationModal = ({
 
         {/* Body */}
 
-        <div className="min-h-[420px] px-8 py-10">
-                      {step === 1 && (
+<div
+  className="
+    min-h-[420px]
+    px-8
+    pr-6
+    py-10
+  "
+>
+                        {step === 1 && (
 
             <div className="space-y-8">
 
@@ -475,23 +532,56 @@ const SellerApplicationModal = ({
               name="storeName"
               value={formData.storeName}
               onChange={handleChange}
+              placeholder="Mashallah Traders"
             />
+
+             {errors.storeName && (
+
+  <p className="mt-2 text-sm text-red-500">
+
+    {errors.storeName}
+
+  </p>
+
+)}
 
             <Input
               label="Phone Number"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
+              placeholder="0385-8579635"
             />
+
+             {errors.phone && (
+
+  <p className="mt-2 text-sm text-red-500">
+
+    {errors.phone}
+
+  </p>
+
+)}
 
             <Input
               label="City"
               name="city"
               value={formData.city}
               onChange={handleChange}
+              placeholder = "Karachi"
             />
 
+{errors.city && (
+
+<p className="mt-2 text-sm text-red-500">
+
+{errors.city}
+
+</p>
+
+)}
           </div>
+
 
         )}
                 {step === 3 && (
@@ -518,11 +608,20 @@ const SellerApplicationModal = ({
 
             <Input
               label="Business Address"
-              name="address"
+              name="storeAddress"
               value={formData.storeAddress}
               onChange={handleChange}
               placeholder="Enter your complete address"
             />
+            {errors.storeAddress && (
+
+  <p className="mt-2 text-sm text-red-500">
+
+    {errors.storeAddress}
+
+  </p>
+
+)}
 
             <label>Business Description</label>
 
@@ -534,6 +633,15 @@ const SellerApplicationModal = ({
   maxLength={300}
   placeholder="Tell us about your business. Mention what products you sell, your specialization, and what customers can expect from your store."
 />
+{errors.businessDescription && (
+
+  <p className="mt-2 text-sm text-red-500">
+
+    {errors.businessDescription}
+
+  </p>
+
+)}
 <div className="text-right text-xs text-text-secondary">
 
 {formData.businessDescription.length}/300
@@ -547,6 +655,15 @@ const SellerApplicationModal = ({
               onChange={handleChange}
               placeholder="42101-1234567-1"
             />
+            {errors.cnic && (
+
+  <p className="mt-2 text-sm text-red-500">
+
+    {errors.cnic}
+
+  </p>
+
+)}
 
             <div
               className="

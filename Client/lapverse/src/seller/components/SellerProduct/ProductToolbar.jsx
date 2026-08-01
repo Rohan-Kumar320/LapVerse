@@ -1,102 +1,96 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FiSearch,
-  FiFilter,
   FiGrid,
   FiList,
+  FiChevronDown,
 } from "react-icons/fi";
 
 const ProductToolbar = ({
   products,
   setFilteredProducts,
+  view,
+  setView,
 }) => {
 
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("Newest");
 
-  const [category, setCategory] =
-    useState("All");
+  //----------------------------------------
 
-  const [sortBy, setSortBy] =
-    useState("Newest");
+  const categories = useMemo(() => {
 
-  //----------------------------------------------------
+    return [
+      "All",
+      ...new Set(products.map((p) => p.category)),
+    ];
+
+  }, [products]);
+
+  //----------------------------------------
 
   useEffect(() => {
 
     let list = [...products];
 
+    //----------------------------------------
     // Search
+    //----------------------------------------
 
     if (search.trim()) {
 
-      list = list.filter((product) => {
+      const keyword = search.toLowerCase();
 
-        const keyword =
-          search.toLowerCase();
+      list = list.filter((product) =>
 
-        return (
+        product.title?.toLowerCase().includes(keyword) ||
 
-          product.title
-            ?.toLowerCase()
-            .includes(keyword) ||
+        product.brand?.toLowerCase().includes(keyword) ||
 
-          product.brand
-            ?.toLowerCase()
-            .includes(keyword) ||
+        product.model?.toLowerCase().includes(keyword)
 
-          product.model
-            ?.toLowerCase()
-            .includes(keyword)
-
-        );
-
-      });
+      );
 
     }
 
+    //----------------------------------------
     // Category
+    //----------------------------------------
 
     if (category !== "All") {
 
       list = list.filter(
 
         (product) =>
-          product.category ===
-          category
+
+          product.category === category
 
       );
 
     }
 
+    //----------------------------------------
     // Sorting
+    //----------------------------------------
 
     switch (sortBy) {
 
       case "Price Low":
 
-        list.sort(
-          (a, b) =>
-            a.price - b.price
-        );
+        list.sort((a, b) => a.price - b.price);
 
         break;
 
       case "Price High":
 
-        list.sort(
-          (a, b) =>
-            b.price - a.price
-        );
+        list.sort((a, b) => b.price - a.price);
 
         break;
 
       case "Stock":
 
-        list.sort(
-          (a, b) =>
-            b.stock - a.stock
-        );
+        list.sort((a, b) => b.stock - a.stock);
 
         break;
 
@@ -106,13 +100,9 @@ const ProductToolbar = ({
 
           (a, b) =>
 
-            new Date(
-              a.createdAt
-            ) -
+            new Date(a.createdAt) -
 
-            new Date(
-              b.createdAt
-            )
+            new Date(b.createdAt)
 
         );
 
@@ -124,13 +114,9 @@ const ProductToolbar = ({
 
           (a, b) =>
 
-            new Date(
-              b.createdAt
-            ) -
+            new Date(b.createdAt) -
 
-            new Date(
-              a.createdAt
-            )
+            new Date(a.createdAt)
 
         );
 
@@ -139,247 +125,382 @@ const ProductToolbar = ({
     setFilteredProducts(list);
 
   }, [
+
     products,
+
     search,
+
     category,
+
     sortBy,
+
     setFilteredProducts,
+
   ]);
 
-  //----------------------------------------------------
-
-  const categories = [
-
-    "All",
-
-    ...new Set(
-      products.map(
-        (p) => p.category
-      )
-    ),
-
-  ];
-
-  //----------------------------------------------------
+  //----------------------------------------
 
   return (
 
     <div
+
       className="
-        rounded-3xl
-        border
-        border-border
-        bg-card
-        p-6
-        shadow-sm
+
+      rounded-3xl
+
+      border
+
+      border-border
+
+      bg-card
+
+      p-7
+
+      shadow-sm
+
       "
+
     >
 
+      {/* Search */}
+
+      <div className="relative">
+
+        <FiSearch
+
+          className="
+
+          absolute
+
+          left-5
+
+          top-1/2
+
+          -translate-y-1/2
+
+          text-lg
+
+          text-text-secondary
+
+          "
+
+        />
+
+        <input
+
+          value={search}
+
+          onChange={(e) =>
+
+            setSearch(e.target.value)
+
+          }
+
+          placeholder="Search products, brand or model..."
+
+          className="
+
+          w-full
+
+          rounded-2xl
+
+          border
+
+          border-border
+
+          bg-background
+
+          py-4
+
+          pl-14
+
+          pr-5
+
+          text-sm
+
+          outline-none
+
+          transition-all
+
+          focus:border-primary
+
+          focus:ring-4
+
+          focus:ring-primary/10
+
+          "
+
+        />
+
+      </div>
+
+      {/* Bottom Controls */}
+
       <div
+
         className="
-          flex
-          flex-col
-          gap-5
-          xl:flex-row
-          xl:items-center
-          xl:justify-between
+
+        mt-7
+
+        flex
+
+        flex-col
+
+        gap-6
+
+        xl:flex-row
+
+        xl:items-center
+
+        xl:justify-between
+
         "
+
       >
 
-        {/* Search */}
+        {/* Category Pills */}
 
         <div
+
           className="
-            relative
-            w-full
-            xl:max-w-md
+
+          flex
+
+          flex-wrap
+
+          gap-3
+
           "
+
         >
 
-          <FiSearch
-            className="
-              absolute
-              left-5
-              top-1/2
-              -translate-y-1/2
-              text-text-secondary
-            "
-          />
+          {categories.map((item) => (
 
-          <input
+            <button
 
-            value={search}
+              key={item}
 
-            onChange={(e) =>
-              setSearch(
-                e.target.value
-              )
-            }
+              onClick={() =>
 
-            placeholder="Search products..."
+                setCategory(item)
 
-            className="
-              w-full
-              rounded-2xl
-              border
-              border-border
-              bg-background
-              py-3
-              pl-14
-              pr-5
-              outline-none
-              transition
-              focus:border-primary
-              focus:ring-4
-              focus:ring-primary/10
-            "
+              }
 
-          />
+              className={`
+
+                rounded-full
+
+                px-5
+
+                py-2.5
+
+                text-sm
+
+                font-semibold
+
+                transition-all
+
+                duration-200
+
+                ${
+
+                  category === item
+
+                    ? "bg-primary text-white shadow-md"
+
+                    : "border border-border bg-background hover:border-primary hover:text-primary"
+
+                }
+
+              `}
+
+            >
+
+              {item}
+
+            </button>
+
+          ))}
 
         </div>
 
         {/* Right Controls */}
 
-        <div className="flex flex-wrap gap-4">
+        <div
 
-          {/* Category */}
+          className="
 
-          <div className="relative">
+          flex
 
-            <FiFilter
-              className="
-                absolute
-                left-4
-                top-1/2
-                -translate-y-1/2
-                text-text-secondary
-              "
-            />
+          items-center
 
-            <select
+          gap-4
 
-              value={category}
+          "
 
-              onChange={(e) =>
-                setCategory(
-                  e.target.value
-                )
-              }
-
-              className="
-                rounded-2xl
-                border
-                border-border
-                bg-background
-                py-3
-                pl-11
-                pr-6
-                outline-none
-                transition
-                focus:border-primary
-              "
-
-            >
-
-              {categories.map(
-                (item) => (
-
-                  <option
-                    key={item}
-                    value={item}
-                  >
-
-                    {item}
-
-                  </option>
-
-                )
-              )}
-
-            </select>
-
-          </div>
+        >
 
           {/* Sort */}
 
-          <select
+          <div className="relative">
 
-            value={sortBy}
+            <select
 
-            onChange={(e) =>
-              setSortBy(
-                e.target.value
-              )
-            }
+              value={sortBy}
 
-            className="
+              onChange={(e) =>
+
+                setSortBy(e.target.value)
+
+              }
+
+              className="
+
+              appearance-none
+
               rounded-2xl
+
               border
+
               border-border
+
               bg-background
+
               px-5
+
               py-3
+
+              pr-12
+
+              text-sm
+
               outline-none
+
               transition
+
               focus:border-primary
-            "
 
-          >
+              "
 
-            <option>
-              Newest
-            </option>
+            >
 
-            <option>
-              Oldest
-            </option>
+              <option>Newest</option>
 
-            <option>
-              Price Low
-            </option>
+              <option>Oldest</option>
 
-            <option>
-              Price High
-            </option>
+              <option>Price Low</option>
 
-            <option>
-              Stock
-            </option>
+              <option>Price High</option>
 
-          </select>
+              <option>Stock</option>
 
-          {/* Grid/List */}
+            </select>
+
+            <FiChevronDown
+
+              className="
+
+              pointer-events-none
+
+              absolute
+
+              right-4
+
+              top-1/2
+
+              -translate-y-1/2
+
+              text-text-secondary
+
+              "
+
+            />
+
+          </div>
+
+          {/* View Toggle */}
 
           <div
+
             className="
-              flex
-              overflow-hidden
-              rounded-2xl
-              border
-              border-border
+
+            flex
+
+            overflow-hidden
+
+            rounded-2xl
+
+            border
+
+            border-border
+
+            bg-background
+
             "
+
           >
 
             <button
-              className="
-                bg-primary
+
+              onClick={() =>
+
+                setView("grid")
+
+              }
+
+              className={`
+
                 p-3
-                text-white
-              "
+
+                transition
+
+                ${
+
+                  view === "grid"
+
+                    ? "bg-primary text-white"
+
+                    : "hover:bg-primary/10"
+
+                }
+
+              `}
+
             >
 
-              <FiGrid />
+              <FiGrid size={20} />
 
             </button>
 
             <button
-              className="
-                bg-background
+
+              onClick={() =>
+
+                setView("list")
+
+              }
+
+              className={`
+
                 p-3
-              "
+
+                transition
+
+                ${
+
+                  view === "list"
+
+                    ? "bg-primary text-white"
+
+                    : "hover:bg-primary/10"
+
+                }
+
+              `}
+
             >
 
-              <FiList />
+              <FiList size={20} />
 
             </button>
 

@@ -327,3 +327,53 @@ export const getMyReviews = async (req, res) => {
 
   }
 };
+
+// Seller Reviews
+
+export const getSellerReviews = async (req, res) => {
+  try {
+
+    const products = await Product.find({
+      seller: req.user._id,
+    }).select("_id");
+
+    const productIds = products.map(
+      (product) => product._id
+    );
+
+    const reviews = await Review.find({
+      product: {
+        $in: productIds,
+      },
+    })
+
+      .populate({
+        path: "product",
+        select:
+          "title brand model images averageRating",
+      })
+
+      .populate({
+        path: "user",
+        select: "name email",
+      })
+
+      .sort({
+        createdAt: -1,
+      });
+
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      reviews,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};

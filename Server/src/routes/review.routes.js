@@ -5,7 +5,8 @@ import {
   updateReview,
   deleteReview,
   getMyReviews,
-  canReviewProduct
+  canReviewProduct,
+  getSellerReviews
 } from "../controllers/review.controller.js";
 import protect from "../middleware/auth.middleware.js"; 
 import { validateReview } from "../validators/review.validator.js";
@@ -19,6 +20,12 @@ router.get(
   "/can-review/:productId",
   protect,
   canReviewProduct
+);
+
+router.get(
+  "/seller",
+  protect,
+  getSellerReviews
 );
 
 router.get(

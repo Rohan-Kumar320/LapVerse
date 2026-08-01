@@ -7,7 +7,14 @@ const SellerLayout = () => {
 
   return (
 
-    <div className="flex h-screen bg-background">
+    <div
+      className="
+        flex
+        h-screen
+        overflow-hidden
+        bg-[#f8fafc]
+      "
+    >
 
       {/* Sidebar */}
 
@@ -15,24 +22,46 @@ const SellerLayout = () => {
 
       {/* Right Side */}
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div
+        className="
+          flex
+          min-w-0
+          flex-1
+          flex-col
+        "
+      >
 
         {/* Navbar */}
 
         <SellerNavbar />
 
-        {/* Main Content */}
+        {/* Main */}
 
         <main
           className="
             flex-1
             overflow-y-auto
-            bg-background
-            p-8
+            bg-gradient-to-br
+            from-slate-700
+            via-slate-400
+            to-orange-300
+            px-8
+            py-8
           "
         >
 
-          <Outlet />
+          <div
+            className="
+              mx-auto
+              w-full
+              max-w-[1700px]
+              animate-[fadeIn_.35s_ease]
+            "
+          >
+
+            <Outlet />
+
+          </div>
 
         </main>
 
