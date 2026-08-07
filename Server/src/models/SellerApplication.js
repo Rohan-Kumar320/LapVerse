@@ -16,6 +16,7 @@ const sellerApplicationSchema = new mongoose.Schema(
         "pending",
         "approved",
         "rejected",
+        "revoked"
       ],
       default: "pending",
     },
@@ -83,7 +84,35 @@ const sellerApplicationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-  },
+
+    revokedAt: Date,
+
+revokedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+},
+
+revocationReason: {
+  type: String,
+  default: "",
+},
+
+restoredAt: {
+    type: Date,
+},
+
+restoredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+},
+
+restorationReason: {
+    type: String,
+    trim: true,
+    default: "",
+},
+
+},
   {
     timestamps: true,
   }

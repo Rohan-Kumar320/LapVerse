@@ -318,6 +318,10 @@ async (req, res) => {
       req.user._id;
 
     await application.save();
+    await application.populate(
+    "user",
+    "name email avatar phone"
+);
 
     const user =
       await User.findById(
@@ -334,14 +338,15 @@ async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({
+    return res.status(200).json({
 
-      success: true,
+    success: true,
 
-      message:
-        "Seller approved successfully.",
+    message: "Seller approved successfully.",
 
-    });
+    application,
+
+});
 
   }
 
@@ -388,15 +393,20 @@ async (req, res) => {
       req.body.reason || "";
 
     await application.save();
+    await application.populate(
+    "user",
+    "name email avatar phone"
+);
 
-    res.status(200).json({
+    return res.status(200).json({
 
-      success: true,
+    success: true,
 
-      message:
-        "Seller application rejected.",
+    message: "Seller application rejected.",
 
-    });
+    application,
+
+});
 
   }
 
@@ -529,5 +539,190 @@ async (req, res) => {
     });
 
   }
+
+};
+
+export const removeSellerRole = async (req, res) => {
+
+    try {
+
+        const { reason } = req.body;
+
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Seller not found.",
+
+            });
+
+        }
+
+        if (!user.roles.includes("seller")) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: "User is not a seller.",
+
+            });
+
+        }
+
+        user.roles = user.roles.filter(
+
+            role => role !== "seller"
+
+        );
+
+        user.activeMode = "user";
+
+        await user.save();
+
+        const application = await SellerApplication.findOne({
+
+            user: user._id,
+
+            status: "approved",
+
+        });
+
+        if (application) {
+
+            application.status = "revoked";
+
+            application.revokedAt = new Date();
+
+            application.revokedBy = req.user._id;
+
+            application.revocationReason = reason || "";
+
+            await application.save();
+
+        }
+
+        return res.json({
+
+            success: true,
+
+            message: "Seller role removed successfully.",
+
+            user,
+
+        });
+
+    }
+
+    catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: error.message,
+
+        });
+
+    }
+
+};
+
+export const restoreSellerRole = async (req, res) => {
+
+    try {
+
+        const { reason } = req.body;
+
+        const application = await SellerApplication.findById(
+            req.params.applicationId
+        );
+
+        if (!application) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Application not found.",
+
+            });
+
+        }
+
+        const user = await User.findById(
+            application.user
+        );
+
+        if (!user) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "User not found.",
+
+            });
+
+        }
+
+        if (user.roles.includes("seller")) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: "Seller role already exists.",
+
+            });
+
+        }
+
+        user.roles.push("seller");
+
+        // Keep the account in User Mode.
+        // The seller can manually switch later.
+
+        user.activeMode = "user";
+
+        await user.save();
+
+        application.status = "approved";
+
+        application.restoredAt = new Date();
+
+        application.restoredBy = req.user._id;
+
+        application.restorationReason = reason || "";
+
+        await application.save();
+
+        return res.json({
+
+            success: true,
+
+            message: "Seller role restored successfully.",
+
+            seller: user,
+
+        });
+
+    }
+
+    catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: error.message,
+
+        });
+
+    }
 
 };

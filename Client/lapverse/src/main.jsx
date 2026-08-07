@@ -11,6 +11,7 @@ import { CartProvider } from "./context/CartContext";
 import { OrderProvider } from "./context/OrderContext";
 import { ReviewProvider } from "./context/ReviewContext";
 import { SellerProvider } from "./context/SellerContext";
+import { AdminProvider } from "./admin/context/AdminContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -20,7 +21,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <OrderProvider>
           <ReviewProvider>
             <SellerProvider>
+              <AdminProvider>
     <App />
+              </AdminProvider>
             </SellerProvider>
           </ReviewProvider>
         </OrderProvider>

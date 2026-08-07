@@ -1,7 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-const protect = async (req, res, next) => {
+//--------------------------------------------------------
+
+export const protect = async (req, res, next) => {
   try {
     let token;
 
@@ -10,27 +12,76 @@ const protect = async (req, res, next) => {
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split(" ")[1];
+    }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-req.user = await User.findById(decoded.id).select("-password -__v");
-if (!req.user) {
-  return res.status(401).json({
-    message: "User no longer exists.",
-  });
-}
-
-next();
-    } else {
-      res.status(401).json({
-        message: "Not authorized, no token",
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized. No token provided.",
       });
     }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    const user = await User.findById(decoded.id)
+      .select("-password -__v");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User no longer exists.",
+      });
+    }
+
+    req.user = user;
+
+    next();
+
   } catch (error) {
-    res.status(401).json({
-      message: "Not authorized",
+
+    return res.status(401).json({
+      success: false,
+      message: "Not authorized.",
     });
+
   }
 };
 
-export default protect;
+//--------------------------------------------------------
+
+export const authorize =
+  (...allowedRoles) =>
+  (req, res, next) => {
+
+    if (!req.user) {
+
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized.",
+      });
+
+    }
+
+    const hasPermission =
+      req.user.roles.some(role =>
+        allowedRoles.includes(role)
+      );
+
+    if (!hasPermission) {
+
+      return res.status(403).json({
+        success: false,
+        message:
+          "You don't have permission to perform this action.",
+      });
+
+    }
+
+    next();
+
+  };
+
+  export default protect;

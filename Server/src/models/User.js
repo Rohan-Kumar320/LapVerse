@@ -102,16 +102,74 @@ roles: {
 },
 activeMode: {
   type: String,
-  enum: ["user", "seller"],
+  enum: ["user", "seller","admin"],
   default: "user",
 },
-    deletionRequested: {
+accountStatus: {
+    type: String,
+    enum: [
+        "Active",
+        "Suspended",
+        "Banned",
+        "Deleted"
+    ],
+    default: "Active",
+},
+
+suspension: {
+
+    reason: {
+        type: String,
+        enum: [
+            "Spam / Fake Listings",
+            "Fraudulent Activity",
+            "Terms of Service Violation",
+            "Abuse / Harassment",
+            "Copyright Violation",
+            "Payment Fraud",
+            "Multiple Violations",
+            "Other",
+        ],
+    },
+
+    note: {
+        type: String,
+        trim: true,
+    },
+
+    suspendedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    },
+
+    suspendedAt: Date,
+
+    reviewDate: Date,
+
+    isAppealed: {
+        type: Boolean,
+        default: false,
+    },
+
+},
+deletionRequested: {
   type: Boolean,
   default: false,
 },
 
 deletionDate: {
   type: Date,
+  default: null,
+},
+
+isDeleted: {
+  type: Boolean,
+  default: false,
+},
+
+deletedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
   default: null,
 },
 

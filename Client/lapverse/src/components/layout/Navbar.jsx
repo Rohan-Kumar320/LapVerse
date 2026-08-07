@@ -546,7 +546,7 @@ const Navbar = () => {
   >
     <img
       src={
-        user?.avatar ||
+        user?.avatar?.url ||
         `https://ui-avatars.com/api/?background=4f46e5&color=fff&name=${encodeURIComponent(
           user?.name || "User"
         )}`

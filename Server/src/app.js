@@ -11,6 +11,7 @@ import sellerRoutes
 from "./routes/seller.routes.js";
 import sellerAnalyticsRoutes from "./routes/sellerAnalytics.routes.js";
 import sellerDashboardRoutes from "./routes/sellerDashboardRoutes.routes.js";
+import adminRoutes from "./routes/admin.routes.js"
 import errorHandler from "./middleware/error.middleware.js";
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+
 app.use(
   "/api/seller",
   sellerRoutes
@@ -39,7 +41,10 @@ app.use(
     sellerDashboardRoutes
 );
 app.use("/api/seller/analytics", sellerAnalyticsRoutes);
-
+app.use(
+  "/api/admin",
+  adminRoutes
+);
 
 
 app.use(errorHandler);

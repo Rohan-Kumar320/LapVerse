@@ -27,6 +27,14 @@ import EditProduct from "../seller/pages/EditProduct";
 import SellerOrders from "../seller/pages/SellerOrders";
 import SellerReviews from "../seller/pages/SellerReviews";
 import SellerAnalytics from "../seller/pages/SellerAnalytics";
+import AdminLogin from "../admin/pages/AdminLogin";
+import AdminProtectedRoute from "../admin/routes/AdminProtectedRoute";
+import AdminLayout from "../admin/layout/AdminLayout";
+import AdminDashboard from "../admin/pages/Dashboard";
+import Users from "../admin/pages/Users";
+import SellerApplications from "../admin/pages/SellerApplications";
+import Sellers from "../admin/pages/Sellers";
+
 
 const AppRoutes = () => {
   return (
@@ -138,6 +146,50 @@ const AppRoutes = () => {
   <Route path="analytics" element={<SellerAnalytics />} />
   {/* <Route path="settings" element={<SellerSettings />} /> */}
 </Route>
+
+<Route
+  path="/admin/login"
+  element={<AdminLogin />}
+/>
+
+<Route
+  path="/admin"
+  element={
+    <AdminProtectedRoute>
+      <AdminLayout />
+    </AdminProtectedRoute>
+  }
+>
+
+  <Route
+    index
+    element={<AdminDashboard />}
+  />
+
+<Route
+  path="/admin/users"
+  element={<Users />}
+/>
+
+<Route
+
+    path="seller-applications"
+
+    element={<SellerApplications />}
+
+/>
+
+<Route
+
+    path="sellers"
+
+    element={<Sellers />}
+
+/>
+
+</Route>
+
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

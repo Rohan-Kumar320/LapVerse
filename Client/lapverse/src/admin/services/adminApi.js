@@ -1,11 +1,11 @@
 import axios from "axios";
 
-const api = axios.create({
+const adminApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+adminApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem("adminToken");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -14,4 +14,4 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export default api;
+export default adminApi;

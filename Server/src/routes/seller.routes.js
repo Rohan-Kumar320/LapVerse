@@ -13,6 +13,8 @@ import {
   rejectSeller,
   switchSellerMode,
   getSellerStatus,
+  removeSellerRole,
+  restoreSellerRole,
 } from "../controllers/seller.controller.js";
 
 import { validateSellerApplication } from "../validators/seller.validator.js";
@@ -68,6 +70,20 @@ router.put(
   "/switch",
   protect,
   switchSellerMode
+);
+
+router.put(
+    "/admin/:id/remove-role",
+    protect,
+    adminOnly,
+    removeSellerRole
+);
+
+router.put(
+  "/admin/applications/:applicationId/restore-role",
+  protect,
+  adminOnly,
+  restoreSellerRole
 );
 
 export default router;
